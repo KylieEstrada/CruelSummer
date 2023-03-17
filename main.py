@@ -17,13 +17,13 @@ def artist_tracks(artist_name):
     # Get artist ID
     artist_lookup = sp.search(q='artist:' + artist_name, type='artist')['artists']['items']
 
-    # Get album and track data
+    # Checking if artist exists
     if len(artist_lookup) > 0:
         artist = artist_lookup[0]
     else:
         print(f"No artist found for {artist_name}")
 
-    # Get all Taylor Swift albums
+    # Get all albums
     albums = []
     album_lookup = sp.artist_albums(artist['id'], album_type='album')
     albums.extend(album_lookup['items'])
@@ -33,7 +33,7 @@ def artist_tracks(artist_name):
 
     albums.sort(key=lambda album: album['release_date'].lower())
 
-    # Get all tracks and audio features from each album
+    # Get all tracks
     tracks = []
     for album in albums:
         track_lookup = sp.album_tracks(album['id'])
@@ -43,6 +43,7 @@ def artist_tracks(artist_name):
             tracks.extend(track_lookup['items'])
 
     return tracks
-# Now take these tracks and put them and their attributes into a dataframe
+
+# Create a dataframe and export as csv
 ts_tracks = artist_tracks("Taylor Swift")
 ts_df = pd.DataFrame.from_dict(ts_tracks)
