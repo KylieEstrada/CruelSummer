@@ -12,42 +12,37 @@ client_secret = os.getenv("CLIENT_SECRET")
 client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# Get Taylor Swift's artist ID
-artist_name = "Taylor Swift"
-results = sp.search(q='artist:' + artist_name, type='artist')
-items = results['artists']['items']
+# Function to look up artist and return their tracks
+def artist_tracks(artist_name):
+    # Get artist ID
+    artist_lookup = sp.search(q='artist:' + artist_name, type='artist')['artists']['items']
 
-if len(items) > 0:
-    taylor_swift = items[0]
-    taylor_swift_id = taylor_swift['id']
+    # Get album and track data
+    if len(artist_lookup) > 0:
+        artist = artist_lookup[0]
+    else:
+        print(f"No artist found for {artist_name}")
 
     # Get all Taylor Swift albums
     albums = []
-    results = sp.artist_albums(taylor_swift_id, album_type='album')
-    for album in results['items']:
-        album_id = album['id']
-        album_name = album['name']
-        album_type = album['album_type']
-        album_release_date = album['release_date']
-        album_artists = []
-        for artist in album['artists']:
-            album_artists.append(artist['name'])
-        albums.append({'id': album_id, 'name': album_name, 'type': album_type, 'release_date': album_release_date,
-                       'artists': album_artists})
+    album_lookup = sp.artist_albums(artist['id'], album_type='album')
+    albums.extend(album_lookup['items'])
+    while album_lookup['next']:
+        album_lookup = sp.next(album_lookup)
+        albums.extend(album_lookup['items'])
 
-        # Get all tracks and audio features from each album
-        tracks = []
-        results = sp.album_tracks(album['id'])
-        for track in results['items']:
-            track_id = track['id']
-            track_uri = track['uri']
-            track_name = track['name']
-            track_artists = []
-            for artist in track['artists']:
-                track_artists.append(artist['name'])
-            tracks.append({'id': track_id, 'uri': track_uri, 'name': track_name, 'artists': track_artists})
+    albums.sort(key=lambda album: album['release_date'].lower())
 
-else:
-    print(f"No artist found for {artist_name}")
+    # Get all tracks and audio features from each album
+    tracks = []
+    for album in albums:
+        track_lookup = sp.album_tracks(album['id'])
+        tracks.extend(track_lookup['items'])
+        while track_lookup['next']:
+            track_lookup = sp.next(track_lookup)
+            tracks.extend(track_lookup['items'])
 
-# Create a dataframe using pandas
+    return tracks
+# Now take these tracks and put them and their attributes into a dataframe
+ts_tracks = artist_tracks("Taylor Swift")
+ts_df = pd.DataFrame.from_dict(ts_tracks)
