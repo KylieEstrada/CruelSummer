@@ -17,7 +17,7 @@ def artist_tracks(artist_name):
     # Get artist ID
     artist_lookup = sp.search(q='artist:' + artist_name, type='artist')['artists']['items']
 
-    # Checking if artist exists
+    # Checking if artist exists and assigns
     if len(artist_lookup) > 0:
         artist = artist_lookup[0]
     else:
@@ -31,8 +31,6 @@ def artist_tracks(artist_name):
         album_lookup = sp.next(album_lookup)
         albums.extend(album_lookup['items'])
 
-    albums.sort(key=lambda album: album['release_date'].lower())
-
     # Get all tracks
     tracks = []
     for album in albums:
@@ -44,6 +42,40 @@ def artist_tracks(artist_name):
 
     return tracks
 
-# Create a dataframe and export as csv
+def all_song_data(tracks):
+    track_data = []
+    for i in tracks:
+        track_info = sp.track(i['id'])
+        features = sp.audio_features(i['id'])
+
+        name = track_info['name']
+        album = track_info['album']['name']
+        artist = track_info['album']['artists'][0]['name']
+        release_date = track_info['album']['release_date']
+        duration_ms = track_info['duration_ms']
+        popularity = track_info['popularity']
+
+        acousticness = features[0]['acousticness']
+        danceability = features[0]['danceability']
+        energy = features[0]['energy']
+        instrumentalness = features[0]['instrumentalness']
+        liveness = features[0]['liveness']
+        loudness = features[0]['loudness']
+        speechiness = features[0]['speechiness']
+        tempo = features[0]['tempo']
+        time_signature = features[0]['time_signature']
+
+
+        track = [name, album, artist, release_date, duration_ms, popularity, acousticness, danceability, energy, instrumentalness, liveness, loudness, speechiness, tempo, time_signature]
+        track_data.append(track)
+
+    return track_data
+
 ts_tracks = artist_tracks("Taylor Swift")
-ts_df = pd.DataFrame.from_dict(ts_tracks)
+track_data = all_song_data(ts_tracks)
+ts_df = pd.DataFrame(track_data, columns=['name', 'album', 'arist', 'release_date', 'duration_ms', 'popularity', 'acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness', 'loudness', 'speechiness', 'tempo', 'time_signature'])
+ts_df.to_csv('taylor_swift_songs.csv')
+
+
+
+
