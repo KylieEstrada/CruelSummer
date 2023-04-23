@@ -13,6 +13,13 @@ hot100_df = hot100_df.groupby('song').last().sort_values('peak_position', ascend
 hot100_df = hot100_df.drop(['performer', 'song_id', 'chart_url', 'chart_date', 'instance', 'previous_week', 'chart_position'], axis=1)
 hot100_df = hot100_df.fillna(0)
 
-pd.merge(ts_df, hot100_df, on='business_id', how='outer')
+ts_df = ts_df.rename(columns={'name': 'song'})
 
-print(result.head(10))
+df = pd.merge(ts_df, hot100_df, how='outer', on='song')
+df = df.groupby('song').first().sort_values('popularity', ascending=False)
+df = df.fillna(0)
+
+df.to_csv('taylor_swift.csv')
+
+
+
