@@ -71,11 +71,12 @@ def all_song_data(tracks):
 
     return track_data
 
-ts_tracks = artist_tracks("Taylor Swift")
-track_data = all_song_data(ts_tracks)
-ts_df = pd.DataFrame(track_data, columns=['name', 'album', 'arist', 'release_date', 'duration_ms', 'popularity', 'acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness', 'loudness', 'speechiness', 'tempo', 'time_signature'])
-ts_df.to_csv('taylor_swift_songs.csv')
+def create_csv(artist_name):
+    tracks = artist_tracks(artist_name)
+    track_data = all_song_data(tracks)
+    df = pd.DataFrame(track_data, columns=['song', 'album', 'artist', 'release_date', 'duration_ms', 'popularity',
+                                              'acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness',
+                                              'loudness', 'speechiness', 'tempo', 'time_signature'])
+    df.to_csv(f'{artist_name}_songs.csv', index=False)
 
-
-
-
+create_csv("Taylor Swift")
